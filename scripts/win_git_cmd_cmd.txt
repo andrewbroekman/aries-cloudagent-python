@@ -1,0 +1,1 @@
+PORTS="8080:8080 8000:8000" scripts/run_docker start --genesis-url http://178.62.37.165:9000/genesis --wallet-type indy --seed 000000000000000000000000000Test1 --wallet-key test1 --inbound-transport h0.0.0.0 8000 --outbound-transport http --admin 0.0.0.0 8080 --admin-insecure-mode  --log-level debug
