@@ -1,4 +1,5 @@
 #!/bin/bash
+echo on
 
 shopt -s nocasematch
 
@@ -147,7 +148,7 @@ else
 fi
 
 echo "Preparing agent image..."
-docker build -q -t faber-alice-demo -f ../docker/Dockerfile.demo .. || exit 1
+docker build -t faber-alice-demo -f ../docker/Dockerfile.demo .. || exit 1
 
 if [ ! -z "$DOCKERHOST" ]; then
   # provided via APPLICATION_URL environment variable
@@ -172,7 +173,7 @@ fi
 # check if ngrok is running on our $AGENT_PORT (don't override if AGENT_ENDPOINT is already set)
 if [ -z "$AGENT_ENDPOINT" ] && [ "$RUNMODE" == "docker" ]; then
     echo "Checking for Agent end point from ngrok service"
-    NGROK_ENDPOINT=$(curl --silent localhost:4040/api/tunnels | jq -r '.tunnels[0].public_url')
+    NGROK_ENDPOINT=$(curl --silent localhost:4040/api/tunnels | /d/stash/git/jq-win64 -r '.tunnels[0].public_url')
 
     if [ -z "$NGROK_ENDPOINT" ] || [ "$NGROK_ENDPOINT" = "null" ]; then
         echo "ngrok not running for Agent endpoint ...."
@@ -193,10 +194,10 @@ if ! [ -z "$POSTGRES" ]; then
 fi
 if ! [ -z "$LEDGER_URL" ]; then
   GENESIS_URL="${LEDGER_URL}/genesis"
-  DOCKER_ENV="${DOCKER_ENV} -e LEDGER_URL=${LEDGER_URL}"
+  DOCKER_ENV="${DOCKER_ENV} -e LEDGER_URL=http://178.62.37.165:9000/"
 fi
 if ! [ -z "$GENESIS_URL" ]; then
-  DOCKER_ENV="${DOCKER_ENV} -e GENESIS_URL=${GENESIS_URL}"
+  DOCKER_ENV="${DOCKER_ENV} -e GENESIS_URL=http://178.62.37.165:9000/genesis"
 fi
 if ! [ -z "$AGENT_ENDPOINT" ]; then
   DOCKER_ENV="${DOCKER_ENV} -e AGENT_ENDPOINT=${AGENT_ENDPOINT}"
@@ -236,9 +237,11 @@ fi
 DOCKER=${DOCKER:-docker}
 
 echo "Starting $AGENT..."
+
+echo $DOCKER run --name $AGENT --rm -it ${DOCKER_OPTS} --network=${DOCKER_NET} -p 0.0.0.0:$AGENT_PORT_RANGE:$AGENT_PORT_RANGE $DOCKER_ENV faber-alice-demo $AGENT_MODULE --port $AGENT_PORT $ARGS
+
 $DOCKER run --name $AGENT --rm -it ${DOCKER_OPTS} \
   --network=${DOCKER_NET} \
   -p 0.0.0.0:$AGENT_PORT_RANGE:$AGENT_PORT_RANGE \
-  -v "/$(pwd)/../logs:/home/indy/logs" \
   $DOCKER_ENV \
   faber-alice-demo $AGENT_MODULE --port $AGENT_PORT $ARGS

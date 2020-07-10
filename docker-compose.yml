@@ -1,0 +1,21 @@
+version: '2'
+services:
+  johan:
+    image: faber-alice-demo
+    build:
+        context: ./docker
+        dockerfile: Dockerfile.run
+    command:
+      - johan
+    tty: true
+    ports:
+      - '0.0.0.0:8060-8067:8060-8067'
+    environment:
+      LEDGER_URL: 'http://178.62.37.165:9000'
+      GENESIS_URL: 'http://178.62.37.165:9000/genesis'
+      RUNMODE: docker
+      DOCKERHOST: 192.168.65.3
+      AGENT_PORT: '8060'
+      TRACE_TARGET: log
+      TRACE_TAG: acapy.events
+      TRACE_ENABLED: 'true'
